@@ -3,13 +3,16 @@ import { useEffect, useRef, useState } from "react";
 import { toExpenses } from "@/lib/ingest";
 import { categories, categoryById } from "@/lib/rules";
 import { scanCanvas, scanFile, toCanvas, type ScanResult } from "@/lib/scan";
-import type { Child, Expense } from "@/lib/types";
+import { resolvePayer } from "@/lib/payer";
+import type { Child, Expense, Parent } from "@/lib/types";
 import { money, uid } from "@/lib/util";
 import { IconCamera } from "./Icons";
 
 const today = () => new Date().toISOString().slice(0, 10);
 
-export function ScanTab({ kids, taxYear, onAdd, onSample, busy, count }: {
+export function ScanTab({ parents, meId, kids, taxYear, onAdd, onSample, busy, count }: {
+  parents: Parent[];
+  meId: string | null;
   kids: Child[];
   taxYear: number;
   onAdd: (e: Expense[]) => void;
@@ -27,6 +30,8 @@ export function ScanTab({ kids, taxYear, onAdd, onSample, busy, count }: {
   const [engine, setEngine] = useState<ScanResult["engine"] | null>(null);
   const [error, setError] = useState("");
   const [printed, setPrinted] = useState<number | undefined>();
+  const [payer, setPayerSel] = useState<{ id: string; manual: boolean }>({ id: "", manual: false });
+  const pname = (p: Parent) => p.name.trim().split(/\s+/)[0] || (p.role === "mom" ? "Mom" : "Dad");
   const [manual, setManual] = useState(false);
 
   const stopCam = () => {
@@ -65,6 +70,8 @@ export function ScanTab({ kids, taxYear, onAdd, onSample, busy, count }: {
     }
     const now = new Date().toISOString();
     setPrinted(r.printed);
+    // who paid: name or card digits on the receipt, else the parent holding this device
+    setPayerSel({ id: resolvePayer(r.lines[0], parents) ?? meId ?? "", manual: false });
     setDraft(toExpenses(r.lines, kids, taxYear).map((e) => ({ ...e, confirmedAt: now })));
   };
   const progress = (stage: string, pct: number) => setWork({ stage, pct });
@@ -96,7 +103,7 @@ export function ScanTab({ kids, taxYear, onAdd, onSample, busy, count }: {
 
   const add = () => {
     if (!draft) return;
-    onAdd(draft);
+    onAdd(payer.manual ? draft.map((e) => ({ ...e, payerId: payer.id || undefined, flags: payer.id ? [...e.flags, "payer_manual"] : e.flags })) : draft);
     setDraft(null);
     setPreview(null);
     setEngine(null);
@@ -127,6 +134,12 @@ export function ScanTab({ kids, taxYear, onAdd, onSample, busy, count }: {
                 </div>
               ))}
             </div>
+            {parents.length > 0 && (
+              <div className="row paid-by">
+                <span className="eyebrow">Paid by</span>
+                {parents.map((p) => <button key={p.id} className={`chip ${payer.id === p.id ? "on" : ""}`} onClick={() => setPayerSel({ id: p.id, manual: true })}>{pname(p)}</button>)}
+              </div>
+            )}
             <div className="row">
               <button className="btn btn-accent btn-lg" onClick={add} disabled={!kept.length}>Add {kept.length} · {money(total, true)}</button>
               <button className="btn btn-lg" onClick={() => { setDraft(null); setPreview(null); }}>Discard</button>
@@ -171,14 +184,14 @@ export function ScanTab({ kids, taxYear, onAdd, onSample, busy, count }: {
         <input ref={fileRef} type="file" accept="image/*,application/pdf,.pdf,.txt,.csv" hidden onChange={(e) => { onFile(e.target.files?.[0]); e.target.value = ""; }} />
       </div>
 
-      {manual && <ManualForm kids={kids} onClose={() => setManual(false)} onSave={(e) => { onAdd([e]); setManual(false); }} />}
+      {manual && <ManualForm kids={kids} parents={parents} meId={meId} onClose={() => setManual(false)} onSave={(e) => { onAdd([e]); setManual(false); }} />}
     </div>
   );
 }
 
-function ManualForm({ kids, onClose, onSave }: { kids: Child[]; onClose: () => void; onSave: (e: Expense) => void }) {
+function ManualForm({ kids, parents, meId, onClose, onSave }: { kids: Child[]; parents: Parent[]; meId: string | null; onClose: () => void; onSave: (e: Expense) => void }) {
   const cats = categories().filter((c) => c.id !== "not_kid");
-  const [f, setF] = useState({ amount: "", date: today(), payee: "", category: "diapers", child: kids.length === 1 ? kids[0].id : "" });
+  const [f, setF] = useState({ amount: "", date: today(), payee: "", category: "diapers", child: kids.length === 1 ? kids[0].id : "", payer: meId ?? "" });
   const amount = Number(f.amount.replace(/[^\d.]/g, ""));
   const ok = amount > 0 && /^\d{4}-\d{2}-\d{2}$/.test(f.date) && f.payee.trim();
   const save = () => {
@@ -196,7 +209,8 @@ function ManualForm({ kids, onClose, onSave }: { kids: Child[]; onClose: () => v
       lane: cat.lane as Expense["lane"],
       childIds: f.child ? [f.child] : [],
       reimbursed: 0,
-      flags: ["manual"],
+      payerId: f.payer || undefined,
+      flags: f.payer ? ["manual", "payer_manual"] : ["manual"],
       included: true,
       confirmedAt: new Date().toISOString(),
     });
@@ -221,6 +235,14 @@ function ManualForm({ kids, onClose, onSave }: { kids: Child[]; onClose: () => v
               {kids.map((k) => <option key={k.id} value={k.id}>{k.name || "Child"}</option>)}
             </select>
           </label>
+          {parents.length > 0 && (
+            <label className="field">Paid by
+              <select value={f.payer} onChange={(e) => setF({ ...f, payer: e.target.value })}>
+                <option value="">Not set</option>
+                {parents.map((p) => <option key={p.id} value={p.id}>{p.name || (p.role === "mom" ? "Mom" : "Dad")}</option>)}
+              </select>
+            </label>
+          )}
         </div>
         <button className="btn btn-accent btn-lg wide" disabled={!ok} onClick={save}>Add {amount > 0 ? money(amount, true) : ""}</button>
       </div>

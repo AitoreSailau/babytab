@@ -5,9 +5,10 @@ import { categories } from "@/lib/rules";
 export const runtime = "nodejs";
 
 const SYSTEM = `You read a photo of a US store receipt or a childcare invoice.
-Return ONLY JSON: {"merchant":string,"date":"YYYY-MM-DD"|null,"subtotal":number|null,"total":number|null,"lines":[{"description":string,"amount":number,"unit_count":number|null,"category_hint":string|null}]}
+Return ONLY JSON: {"merchant":string,"date":"YYYY-MM-DD"|null,"subtotal":number|null,"total":number|null,"card_last4":string|null,"payer_name":string|null,"lines":[{"description":string,"amount":number,"unit_count":number|null,"category_hint":string|null}]}
 Rules:
 - subtotal / total = the figures printed on the receipt (before tax / after tax), copied not computed.
+- card_last4 = last 4 digits of the card that paid, if printed. payer_name = the person named as cardholder or "paid by", if printed. Never guess who paid.
 - One line per purchased item or payment. Skip subtotal, total, tax, change and card lines.
 - amount: positive for money paid, negative for refunds/discounts.
 - description = the item text as printed.
@@ -25,7 +26,7 @@ export async function POST(req: Request) {
   if (!m || m[2].length > 5_500_000) return NextResponse.json({ error: "bad_image" }, { status: 400 });
   const r = await callLlm({ system: SYSTEM, user: "Extract the lines from this receipt.", json: true, maxTokens: 3000, timeoutMs: 30000, image: { mediaType: m[1], base64: m[2] } });
   if (!r) return NextResponse.json({ unavailable: true, error: "llm_failed" });
-  const j = extractJson(r.text) as { merchant?: string; date?: string | null; subtotal?: number | null; total?: number | null; lines?: Record<string, unknown>[] } | null;
+  const j = extractJson(r.text) as { merchant?: string; date?: string | null; subtotal?: number | null; total?: number | null; card_last4?: string | null; payer_name?: string | null; lines?: Record<string, unknown>[] } | null;
   if (!j?.lines) return NextResponse.json({ unavailable: true, error: "llm_bad_output" });
-  return NextResponse.json({ merchant: j.merchant ?? "", date: j.date ?? null, subtotal: j.subtotal ?? null, total: j.total ?? null, lines: j.lines, provider: `${r.provider}:${r.model}` });
+  return NextResponse.json({ merchant: j.merchant ?? "", date: j.date ?? null, subtotal: j.subtotal ?? null, total: j.total ?? null, card_last4: j.card_last4 ?? null, payer_name: j.payer_name ?? null, lines: j.lines, provider: `${r.provider}:${r.model}` });
 }

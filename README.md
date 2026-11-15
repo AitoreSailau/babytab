@@ -10,13 +10,15 @@ Kid-spending tracker + US childcare tax tool (credit vs. Dependent Care FSA, tax
 - **Manual entry**: amount, date, payee, category, child.
 - **Spending**: totals, month chart, categories, cheaper-elsewhere, repeat buys, editable expense list.
 - **Tax**: best move, side-by-side numbers, gaps by dollars, plan-year timeline with time travel, providers, Tax Pack behind the paywall (Stripe test mode).
+- **Mom / Dad**: Profile holds both parents (name, Gmail, cards and payment methods). Every expense gets a payer by rule: printed cardholder name → card last-4 → payment method → the parent on this device. The AI only copies printed card digits and names; it never decides who paid. Spending shows a "Who pays" split and each expense's payer is editable.
+- **One family, two Gmail accounts**: with `NEXT_PUBLIC_GOOGLE_CLIENT_ID` + Upstash Redis (`KV_REST_API_URL`, `KV_REST_API_TOKEN`) + `ENTITLEMENT_SECRET`, each parent signs in with Google and both open the same household (`/api/auth`, `/api/household`). Without these the app stays local to the browser and the parent is picked with a "This device" switch.
 - Removed from the UI: review step, Pub 503 ledger table, FSA curve chart, medical lane block.
 
 ## Run it
 
 ```bash
 npm install
-npm test          # 32 engine/parser/pipeline tests
+npm test          # 42 tests: engine, parser, payer rules, shared household, Google token checks
 npm run dev       # http://localhost:3000
 ```
 

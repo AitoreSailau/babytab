@@ -1,14 +1,16 @@
 "use client";
 import { extractRegex, type InputFile } from "./parse";
-import type { Child, Household, RawLine } from "./types";
+import type { Child, Household, Parent, RawLine } from "./types";
 import { fnv1a } from "./util";
 import type { AppData } from "./pipeline";
 
 export const STORAGE_KEY = "babytab.v2";
 
 export type Tab = "scan" | "analytics" | "tax" | "profile";
+export interface Session { token: string; email: string; name: string }
 export interface Saved {
   tab: Tab;
+  me: string | null;       // Parent.id using this device (when not signed in with Google)
   data: AppData;
   mode: "sample" | "own";
   withLeo: boolean;
@@ -53,6 +55,7 @@ export const defaultHousehold = (): Household => ({
 });
 
 export interface SampleMeta {
+  parents?: Parent[];
   asOf: string;
   household: Household;
   children: Child[];
@@ -128,6 +131,9 @@ export async function extractLines(files: InputFile[], children: Child[], useAi:
         tinPresent: Boolean(l.tin_present) || tin,
         unitCount: typeof l.unit_count === "number" ? l.unit_count : undefined,
         categoryHint: (l.category_hint as string) || undefined,
+        // who paid: the model only copies printed digits / names; rules fall back to what the parser saw
+        cardLast4: (/^\d{4}$/.test(String(l.card_last4 ?? "")) ? String(l.card_last4) : undefined) ?? rules.find((x) => x.cardLast4)?.cardLast4,
+        payerHint: (l.payer_name as string) || rules.find((x) => x.payerHint)?.payerHint,
         source: f.name,
         sourceHash: hash,
       }))
@@ -160,4 +166,12 @@ export function download(name: string, content: string, type = "text/plain") {
   a.click();
   a.remove();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+const SESSION_KEY = "babytab.session";
+export function loadSession(): Session | null {
+  try { const s = localStorage.getItem(SESSION_KEY); return s ? (JSON.parse(s) as Session) : null; } catch { return null; }
+}
+export function saveSession(s: Session | null) {
+  try { if (s) localStorage.setItem(SESSION_KEY, JSON.stringify(s)); else localStorage.removeItem(SESSION_KEY); } catch {}
 }

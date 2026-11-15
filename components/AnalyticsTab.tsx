@@ -2,14 +2,17 @@
 import { useState } from "react";
 import { categories, categoryById } from "@/lib/rules";
 import type { SpendingResult } from "@/lib/spending";
-import type { Expense } from "@/lib/types";
+import { spendingByPayer } from "@/lib/payer";
+import type { Expense, Parent } from "@/lib/types";
 import { money, pctStr } from "@/lib/util";
 import { BarList, Meter, MonthBars } from "./charts";
 
-export function AnalyticsTab({ s, expenses, year, onEdit, onDelete, onGoScan, onSample, busy }: {
+export function AnalyticsTab({ s, expenses, year, parents, onPayer, onEdit, onDelete, onGoScan, onSample, busy }: {
   s: SpendingResult;
   expenses: Expense[];
   year: number;
+  parents: Parent[];
+  onPayer: (id: string, payerId: string) => void;
   onEdit: (id: string, category: string) => void;
   onDelete: (id: string) => void;
   onGoScan: () => void;
@@ -31,6 +34,8 @@ export function AnalyticsTab({ s, expenses, year, onEdit, onDelete, onGoScan, on
   const list = [...expenses].sort((a, b) => (a.date < b.date ? 1 : -1));
   const shown = all ? list : list.slice(0, 6);
   const top = s.unitPrices[0];
+  const payers = spendingByPayer(expenses, parents, year, s.thisMonthKey, (id) => categoryById(id).label);
+  const short = (p: Parent) => (p.name.trim().split(/\s+/)[0] || (p.role === "mom" ? "Mom" : "Dad"));
   return (
     <div className="stack">
       <div className="hero-card">
@@ -60,6 +65,26 @@ export function AnalyticsTab({ s, expenses, year, onEdit, onDelete, onGoScan, on
           <div className="sub">{top ? `${top.bestMerchant} is cheaper` : "same item, other store"}</div>
         </div>
       </div>
+
+      {parents.length > 0 && (
+        <div className="card">
+          <h2>Who pays</h2>
+          <div className="split" role="img" aria-label="Share of spending by parent">
+            {payers.filter((p) => p.total > 0).map((p) => <span key={p.id} className={`seg ${p.role}`} style={{ flexGrow: Math.max(p.total, 0.0001) }} title={`${p.name}: ${money(p.total)}`} />)}
+          </div>
+          <div className={`tiles flush ${payers.length > 2 ? "t3" : "t2"}`}>
+            {payers.map((p) => (
+              <div key={p.id} className={`sbs who ${p.role}`}>
+                <div className="eyebrow">{p.role === "mom" ? "Mom" : p.role === "dad" ? "Dad" : ""}{p.role !== "none" && p.name ? " · " : ""}{p.name}</div>
+                <div className="big">{money(p.total)}</div>
+                <div className="pair"><span>Share</span><b>{pctStr(p.share)}</b></div>
+                <div className="pair"><span>This month</span><b>{money(p.thisMonth)}</b></div>
+                {p.top.map((c) => <div key={c.label} className="pair small"><span>{c.label}</span><b>{money(c.total)}</b></div>)}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="card">
         <div className="row-between"><h2>By month</h2><div className="legend"><span><i className="dot-care" />Childcare</span><span><i className="dot-rest" />Everything else</span></div></div>
@@ -108,12 +133,18 @@ export function AnalyticsTab({ s, expenses, year, onEdit, onDelete, onGoScan, on
         <div className="row-between"><h2>Expenses</h2><button className="btn btn-sm" onClick={() => setAll(!all)}>{all ? "Show less" : `All ${list.length}`}</button></div>
         <div className={`exp-list ${all ? "scroll" : ""}`}>
           {shown.map((e) => (
-            <div key={e.id} className={`exp-row ${e.included ? "" : "off"}`}>
+            <div key={e.id} className={`exp-row ${parents.length ? "with-who" : ""} ${e.included ? "" : "off"}`}>
               <span className="exp-date">{e.date.slice(5)}</span>
               <span className="exp-what" title={e.description}><b>{e.merchant}</b><small>{e.description}</small></span>
               <select value={e.category} onChange={(ev) => onEdit(e.id, ev.target.value)} aria-label="Category">
                 {cats.map((c) => <option key={c.id} value={c.id}>{c.label}</option>)}
               </select>
+              {parents.length > 0 && (
+                <select className="who-sel" value={e.payerId ?? ""} onChange={(ev) => onPayer(e.id, ev.target.value)} aria-label="Paid by">
+                  <option value="">—</option>
+                  {parents.map((p) => <option key={p.id} value={p.id}>{short(p)}</option>)}
+                </select>
+              )}
               <span className="num">{money(e.amount, true)}</span>
               <button className="x" onClick={() => onDelete(e.id)} aria-label={`Delete ${categoryById(e.category).label}`}>✕</button>
             </div>

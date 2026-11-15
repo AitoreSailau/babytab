@@ -14,9 +14,47 @@
     "monthlyBudget": 1900
   },
   "children": [
-    { "id": "c_mia", "name": "Mia Rivera", "birthDate": "2023-04-12" }
+    {
+      "id": "c_mia",
+      "name": "Mia Rivera",
+      "birthDate": "2023-04-12"
+    }
   ],
-  "optionalChild": { "id": "c_leo", "name": "Leo Rivera", "birthDate": "2020-02-03" },
-  "files": ["little_oaks_statement.txt", "zelle_venmo_history.txt", "store_receipts.txt", "card_export.csv"],
-  "optionalChildFiles": ["leo_school_and_care.txt"]
+  "optionalChild": {
+    "id": "c_leo",
+    "name": "Leo Rivera",
+    "birthDate": "2020-02-03"
+  },
+  "files": [
+    "little_oaks_statement.txt",
+    "zelle_venmo_history.txt",
+    "store_receipts.txt",
+    "card_export.csv"
+  ],
+  "optionalChildFiles": [
+    "leo_school_and_care.txt"
+  ],
+  "parents": [
+    {
+      "id": "p_ana",
+      "name": "Ana Rivera",
+      "role": "mom",
+      "email": "ana.rivera@example.com",
+      "pays": [
+        "4417",
+        "venmo"
+      ]
+    },
+    {
+      "id": "p_marco",
+      "name": "Marco Rivera",
+      "role": "dad",
+      "email": "marco.rivera@example.com",
+      "pays": [
+        "9012",
+        "zelle",
+        "checking"
+      ]
+    }
+  ]
 }

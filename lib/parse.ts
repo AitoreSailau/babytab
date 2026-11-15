@@ -69,6 +69,18 @@ function payMethodOf(text: string): string | undefined {
   return undefined;
 }
 
+/** Last 4 digits of the card a document was paid with ("VISA ****4417", "card ending in 4417", "VISA 4417"). */
+export function cardLast4(text: string): string | undefined {
+  // tolerant of OCR noise between the brand / mask and the digits ("VISA *x%*4417", "ACCOUNT # **** **** **** 4417")
+  const m = text.match(/(?:\*{2,}|x{3,}|ending in|visa|master ?card|amex|discover|debit|credit|card|acct|account\s*#)[^\n\d]{0,16}(\d{4})(?![\d.,\/-])/i);
+  return m ? m[1] : undefined;
+}
+/** A person named on the document as the one who paid. */
+export function payerHint(text: string): string | undefined {
+  const m = text.match(/\b(?:account holder|card ?holder|paid by|payer|member)\s*[:\-]\s*([A-Za-z][A-Za-z.' -]{1,40})/i);
+  return m ? m[1].trim().split(/\s{2,}/)[0] : undefined;
+}
+
 function childIn(text: string, children: Child[]): string | undefined {
   for (const c of children) {
     const first = c.name.split(/\s+/)[0];
@@ -136,7 +148,7 @@ function parseCsv(file: InputFile, children: Child[]): RawLine[] {
       amount,
       payMethod: payMethodOf(`${desc} ${iMethod >= 0 ? c[iMethod] : ""}`),
       childName: (iChild >= 0 && c[iChild]) || childIn(`${desc} ${payeeCol}`, children),
-      categoryHint: iCat >= 0 ? undefined : undefined,
+      cardLast4: iMethod >= 0 ? cardLast4(c[iMethod] || "") ?? (c[iMethod] || "").match(/\b(\d{4})\b/)?.[1] : undefined,
       source: file.name,
       sourceHash: hash,
     });
@@ -178,6 +190,8 @@ function parseDoc(doc: string, file: InputFile, children: Child[]): RawLine[] {
   const firstDate = lines.map((l) => (AMOUNT_END.test(l) && /^\s*\d/.test(l) ? undefined : parseDate(l))).find(Boolean);
   const docDate = paidDate ?? firstDate;
   const docMethod = payMethodOf(doc);
+  const docCard = cardLast4(doc);
+  const docPayer = payerHint(doc);
 
   const out: RawLine[] = [];
   for (let i = 1; i < lines.length; i++) {
@@ -221,6 +235,8 @@ function parseDoc(doc: string, file: InputFile, children: Child[]): RawLine[] {
       childName: childIn(desc, children) ?? docChild,
       tinPresent,
       unitCount: unitCount(desc),
+      cardLast4: docCard,
+      payerHint: docPayer,
       source: file.name,
       sourceHash: hash,
     });

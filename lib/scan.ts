@@ -152,6 +152,8 @@ async function viaAi(canvas: HTMLCanvasElement, name: string): Promise<{ lines: 
         unitCount: typeof l.unit_count === "number" ? l.unit_count : undefined,
         categoryHint: (l.category_hint as string) || undefined,
         payMethod: "card",
+        cardLast4: /^\d{4}$/.test(String(j.card_last4 ?? "")) ? String(j.card_last4) : undefined,
+        payerHint: typeof j.payer_name === "string" && j.payer_name ? j.payer_name : undefined,
         source: name,
         sourceHash: hash,
       }))

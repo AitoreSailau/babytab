@@ -6,7 +6,7 @@ import { categories } from "@/lib/rules";
 export const runtime = "nodejs";
 
 const SYSTEM = `You extract payment lines from US receipts, provider invoices/statements, Zelle/Venmo history and CSV exports.
-Return ONLY JSON: {"lines":[{"date":"YYYY-MM-DD","merchant":string,"description":string,"amount":number,"service_from":"YYYY-MM-DD"|null,"service_to":"YYYY-MM-DD"|null,"pay_method":"card"|"ach"|"zelle"|"venmo"|"cash"|"check"|null,"child_name":string|null,"tin_present":boolean,"unit_count":number|null,"category_hint":string|null}]}
+Return ONLY JSON: {"lines":[{"date":"YYYY-MM-DD","merchant":string,"description":string,"amount":number,"service_from":"YYYY-MM-DD"|null,"service_to":"YYYY-MM-DD"|null,"pay_method":"card"|"ach"|"zelle"|"venmo"|"cash"|"check"|null,"child_name":string|null,"tin_present":boolean,"unit_count":number|null,"category_hint":string|null,"card_last4":string|null,"payer_name":string|null}]}
 Rules:
 - One line per purchased item or payment. Skip subtotal, total, tax, balance and card lines.
 - amount: positive for money paid, negative for refunds/credits. Bank exports often show payments as negative: flip them so payments are positive.
@@ -14,6 +14,8 @@ Rules:
 - merchant = store or care provider; for Zelle/Venmo use the payee name.
 - description = the item or memo text, unchanged.
 - tin_present = true if the document shows an EIN/TIN (it may appear as [ID ON FILE]) or says tax-exempt.
+- card_last4 = the last 4 digits of the card or account that paid, if printed (e.g. "VISA ****4417" → "4417").
+- payer_name = the person named as cardholder / account holder / "paid by", if printed. Never guess who paid.
 - unit_count = the number before "ct"/"count" if present.
 - category_hint is only a hint; choose from: ${categories().map((c) => c.id).join(", ")}.
 Do not invent lines. Do not compute anything.`;

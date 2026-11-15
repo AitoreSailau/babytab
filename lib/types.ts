@@ -19,6 +19,14 @@ export interface Household {
   monthlyBudget: number;     // kid-spending budget per month (retention meter)
 }
 
+export interface Parent {
+  id: string;
+  name: string;
+  role: "mom" | "dad";
+  email: string;           // Google account that can open this household
+  pays: string[];          // how this parent pays: card last-4 ("4417") or method ("venmo", "zelle", "checking", "cash")
+}
+
 export interface Child {
   id: string;
   name: string;
@@ -45,6 +53,8 @@ export interface RawLine {
   tinPresent?: boolean;
   unitCount?: number;      // e.g. 150 ct diapers
   categoryHint?: string;   // LLM hint only, never a decision
+  cardLast4?: string;      // last 4 digits printed on the receipt / card column
+  payerHint?: string;      // a name printed as cardholder / account holder / "paid by"
   source: string;          // file name / "manual"
   sourceHash?: string;
 }
@@ -59,6 +69,7 @@ export interface Expense extends RawLine {
   flags: string[];
   included: boolean;       // user confirm toggle
   confirmedAt?: string;
+  payerId?: string;        // which parent paid (Parent.id)
   projected?: boolean;     // created by the plan-year projector, not a real payment
 }
 

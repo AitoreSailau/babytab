@@ -1,11 +1,12 @@
 import { computeTax } from "./engine";
 import { projectRecurring, timeline } from "./project";
 import { analyzeSpending } from "./spending";
-import type { Child, Expense, Household, Provider } from "./types";
+import type { Child, Expense, Household, Parent, Provider } from "./types";
 
 export interface AppData {
   household: Household;
   children: Child[];
+  parents?: Parent[];
   providers: Provider[];
   expenses: Expense[];
   asOf: string;
