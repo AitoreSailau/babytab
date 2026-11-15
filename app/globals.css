@@ -37,7 +37,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .side { position: fixed; left: 28px; top: 36px; z-index: 30; width: 68px; padding: 14px 0 18px; border-radius: 34px; background: var(--side); display: flex; flex-direction: column; align-items: center; gap: 18px; }
 .side-logo { width: 46px; height: 46px; border-radius: 14px; display: grid; place-items: center; color: var(--ink); background: var(--soft); margin-bottom: 14px; }
 .side-btn { width: 52px; height: 52px; border: 0; border-radius: 50%; background: transparent; color: var(--icon); display: grid; place-items: center; cursor: pointer; transition: background 0.15s, color 0.15s; }
-.side-btn:hover { color: var(--accent); }
+@media (hover: hover) { .side-btn:hover { color: var(--accent); } }
 .side-btn.on { background: var(--accent); color: var(--white); }
 .side-btn:focus-visible, .btn:focus-visible, .chip:focus-visible, .scan-btn:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
 .main { margin-left: 124px; padding: 56px 56px 120px; max-width: 1320px; }
@@ -302,4 +302,25 @@ input[type="email"] { width: 100%; background: var(--white); border: 2px solid t
   .exp-row.with-who .who-sel { grid-column: 2 / 4; grid-row: 3; }
   .form-grid.parent { grid-template-columns: 1fr 1fr; }
   .form-grid.parent .x { justify-self: end; }
+}
+
+/* ---------- Phone polish ---------- */
+* { -webkit-tap-highlight-color: transparent; }
+@media (max-width: 900px) {
+  /* scanner first: the camera and the scan button must be on the first screen */
+  .scan-card { order: -1; }
+  .scan-grid:has(.found) .scan-card { order: 1; }
+  .scan-preview { aspect-ratio: 1 / 0.72; }
+  .intro h1 { font-size: 34px; margin-bottom: 14px; }
+  .intro p { margin-bottom: 12px; }
+  .found-list { max-height: none; padding: 4px 16px; }
+  .found-row { grid-template-columns: 22px 1fr 92px; gap: 12px; }
+  /* profile rows: every field gets a readable width */
+  .form-grid.kid { grid-template-columns: 1fr 36px; }
+  .form-grid.kid .field:first-child { grid-column: 1 / 3; }
+  .form-grid.parent { grid-template-columns: 110px 1fr; padding-bottom: 14px; border-bottom: 2px solid var(--soft); }
+  .form-grid.parent .field:nth-child(3), .form-grid.parent .field:nth-child(4) { grid-column: 1 / 3; }
+  .form-grid.parent .x { grid-column: 2; justify-self: end; }
+  input, select { min-width: 0; }
+  .side-btn { width: 56px; height: 56px; }
 }
