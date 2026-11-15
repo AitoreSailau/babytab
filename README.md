@@ -6,6 +6,7 @@ Kid-spending tracker + US childcare tax tool (credit vs. Dependent Care FSA, tax
 
 - **Four tabs** in a left rail: Scan, Spending, Tax, Profile. Pink palette taken from the design sketch only.
 - **Receipt scanner**: camera or photo/PDF/text file. Without keys the photo is read in the browser (Tesseract.js, assets self-hosted in `/public/ocr`, nothing uploaded) and parsed by the rules parser. With `ANTHROPIC_API_KEY` / `OPENAI_API_KEY` a vision model reads the photo via `/api/scan`.
+- **Scan safety net**: the app (not the model) adds up the items and compares them with the subtotal/total printed on the receipt; on a mismatch it warns and prices are editable before saving.
 - **Manual entry**: amount, date, payee, category, child.
 - **Spending**: totals, month chart, categories, cheaper-elsewhere, repeat buys, editable expense list.
 - **Tax**: best move, side-by-side numbers, gaps by dollars, plan-year timeline with time travel, providers, Tax Pack behind the paywall (Stripe test mode).

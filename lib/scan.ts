@@ -13,6 +13,30 @@ export interface ScanResult {
   lines: RawLine[];
   engine: "ai" | "ocr" | "text";
   text?: string;
+  /** Subtotal (or total) printed on the receipt, used to double-check the items we read. */
+  printed?: number;
+}
+
+/** Printed subtotal/total from receipt text, for a sum check against the extracted items. */
+export function printedTotals(text: string): { subtotal?: number; total?: number } {
+  const out: { subtotal?: number; total?: number } = {};
+  for (const l of text.split(/\r?\n/)) {
+    const m = l.trim().match(/^(sub\s?-?total|total)\b.*?(\d[\d,]*\.\d{2})\s*$/i);
+    if (!m) continue;
+    const v = Number(m[2].replace(/,/g, ""));
+    if (/^sub/i.test(m[1])) out.subtotal ??= v;
+    else out.total ??= v;
+  }
+  return out;
+}
+
+/** The printed figure the items should add up to: subtotal if shown, else total. Undefined when the items already match either. */
+export function expectedSum(text: string, lines: RawLine[]): number | undefined {
+  const { subtotal, total } = printedTotals(normalizeReceiptText(text));
+  const sum = lines.reduce((a, l) => a + l.amount, 0);
+  const near = (v?: number) => v !== undefined && Math.abs(v - sum) < 0.015;
+  if (near(subtotal) || near(total)) return undefined;
+  return subtotal ?? total;
 }
 type Progress = (stage: string, pct: number) => void;
 
@@ -25,6 +49,8 @@ export function normalizeReceiptText(text: string): string {
     .map((l) =>
       l
         .replace(/[|]/g, " ")
+        // "HUGGIES LS 4   003600051470 F   26.97 X" → drop the UPC and the tax flag next to it
+        .replace(/\s+\d{9,14}(\s+[A-Z])?(?=\s)/, " ")
         .replace(/(\d)\s*[,.]\s*(\d{2})\s*[A-Za-z]{0,2}\s*$/, "$1.$2") // "46,99 T" → "46.99"
         .replace(/\$\s+(\d)/g, "$$$1")
         .replace(/\s+$/, "")
@@ -42,7 +68,8 @@ export function parseReceiptText(name: string, text: string, children: Child[]):
   const clean = normalizeReceiptText(text);
   if (!clean) return [];
   // OCR often reads a leading capital as lowercase ("pampers"): restore it.
-  return extractRegex([{ name, text: clean }], children).map((l) => ({ ...l, description: l.description.replace(/^[a-z]/, (c) => c.toUpperCase()) }));
+  const cap = (t: string) => t.replace(/^[a-z]/, (c) => c.toUpperCase());
+  return extractRegex([{ name, text: clean }], children).map((l) => ({ ...l, merchant: cap(l.merchant), description: cap(l.description) }));
 }
 
 /** Draw any image source on a canvas, scaled for OCR. */
@@ -102,7 +129,7 @@ async function ocr(canvas: HTMLCanvasElement, onProgress?: Progress): Promise<st
   }
 }
 
-async function viaAi(canvas: HTMLCanvasElement, name: string): Promise<RawLine[] | null> {
+async function viaAi(canvas: HTMLCanvasElement, name: string): Promise<{ lines: RawLine[]; printed?: number } | null> {
   try {
     const small = toCanvas(canvas, canvas.width, canvas.height, 1600);
     const r = await fetch("/api/scan", {
@@ -116,7 +143,7 @@ async function viaAi(canvas: HTMLCanvasElement, name: string): Promise<RawLine[]
     const date = typeof j.date === "string" && /^\d{4}-\d{2}-\d{2}$/.test(j.date) ? j.date : todayISO();
     const merchant = String(j.merchant || "Receipt");
     const hash = fnv1a(JSON.stringify(j.lines));
-    return (j.lines as Record<string, unknown>[])
+    const lines = (j.lines as Record<string, unknown>[])
       .map((l) => ({
         date,
         merchant,
@@ -129,6 +156,12 @@ async function viaAi(canvas: HTMLCanvasElement, name: string): Promise<RawLine[]
         sourceHash: hash,
       }))
       .filter((l) => l.description && isFinite(l.amount) && l.amount !== 0);
+    if (!lines.length) return null;
+    // The model reports the printed subtotal/total separately; the app (not the model) does the sum check.
+    const sum = lines.reduce((a, l) => a + l.amount, 0);
+    const shown = [j.subtotal, j.total].filter((v): v is number => typeof v === "number" && isFinite(v));
+    const printed = shown.length && !shown.some((v) => Math.abs(v - sum) < 0.015) ? shown[0] : undefined;
+    return { lines, printed };
   } catch {
     return null;
   }
@@ -137,9 +170,10 @@ async function viaAi(canvas: HTMLCanvasElement, name: string): Promise<RawLine[]
 export async function scanCanvas(canvas: HTMLCanvasElement, children: Child[], onProgress?: Progress, name = `scan_${Date.now()}.jpg`): Promise<ScanResult> {
   onProgress?.("Reading", 0.05);
   const ai = await viaAi(canvas, name);
-  if (ai?.length) return { lines: ai, engine: "ai" };
+  if (ai) return { lines: ai.lines, engine: "ai", printed: ai.printed };
   const text = await ocr(canvas, onProgress);
-  return { lines: parseReceiptText(name, text, children), engine: "ocr", text };
+  const lines = parseReceiptText(name, text, children);
+  return { lines, engine: "ocr", text, printed: expectedSum(text, lines) };
 }
 
 async function pdfToTextOrCanvas(file: File): Promise<{ text: string; canvas?: HTMLCanvasElement }> {
@@ -177,12 +211,15 @@ export async function scanFile(file: File, children: Child[], onProgress?: Progr
   if (isText) {
     const text = await file.text();
     const lines = /\.csv$/i.test(name) ? extractRegex([{ name, text }], children) : parseReceiptText(name, text, children);
-    return { lines, engine: "text", text };
+    return { lines, engine: "text", text, printed: expectedSum(text, lines) };
   }
   if (isPdf) {
     onProgress?.("Reading", 0.1);
     const { text, canvas } = await pdfToTextOrCanvas(file);
-    if (!canvas) return { lines: parseReceiptText(name, text, children), engine: "text", text };
+    if (!canvas) {
+      const lines = parseReceiptText(name, text, children);
+      return { lines, engine: "text", text, printed: expectedSum(text, lines) };
+    }
     return { ...(await scanCanvas(canvas, children, onProgress, name)), preview: canvas.toDataURL("image/jpeg", 0.7) };
   }
   const canvas = await fileToCanvas(file);

@@ -26,6 +26,7 @@ export function ScanTab({ kids, taxYear, onAdd, onSample, busy, count }: {
   const [draft, setDraft] = useState<Expense[] | null>(null);
   const [engine, setEngine] = useState<ScanResult["engine"] | null>(null);
   const [error, setError] = useState("");
+  const [printed, setPrinted] = useState<number | undefined>();
   const [manual, setManual] = useState(false);
 
   const stopCam = () => {
@@ -63,6 +64,7 @@ export function ScanTab({ kids, taxYear, onAdd, onSample, busy, count }: {
       return;
     }
     const now = new Date().toISOString();
+    setPrinted(r.printed);
     setDraft(toExpenses(r.lines, kids, taxYear).map((e) => ({ ...e, confirmedAt: now })));
   };
   const progress = (stage: string, pct: number) => setWork({ stage, pct });
@@ -101,6 +103,12 @@ export function ScanTab({ kids, taxYear, onAdd, onSample, busy, count }: {
   };
   const kept = draft?.filter((e) => e.included) ?? [];
   const total = kept.reduce((s, e) => s + e.amount, 0);
+  const allSum = draft?.reduce((s, e) => s + e.amount, 0) ?? 0;
+  const mismatch = printed !== undefined && Math.abs(printed - allSum) >= 0.015;
+  const setAmount = (id: string, v: string) => {
+    const n = Number(v.replace(/[^\d.-]/g, ""));
+    if (draft && isFinite(n)) setDraft(draft.map((x) => (x.id === id ? { ...x, amount: n } : x)));
+  };
 
   return (
     <div className="scan-grid">
@@ -109,13 +117,14 @@ export function ScanTab({ kids, taxYear, onAdd, onSample, busy, count }: {
           <div className="found">
             <div className="eyebrow">{draft[0].merchant} · {draft[0].date}{engine === "ai" ? " · AI" : ""}</div>
             <div className="big">{money(total, true)}</div>
+            {mismatch && <div className="found-warn">Items {money(allSum, true)} ≠ receipt {money(printed!, true)}. Check the prices.</div>}
             <div className="found-list">
               {draft.map((e) => (
-                <label key={e.id} className={`found-row ${e.included ? "" : "off"}`}>
-                  <input type="checkbox" checked={e.included} onChange={() => setDraft(draft.map((x) => (x.id === e.id ? { ...x, included: !x.included } : x)))} />
+                <div key={e.id} className={`found-row ${e.included ? "" : "off"}`}>
+                  <input type="checkbox" aria-label={`Include ${e.description}`} checked={e.included} onChange={() => setDraft(draft.map((x) => (x.id === e.id ? { ...x, included: !x.included } : x)))} />
                   <span className="found-desc">{e.description}<small>{categoryById(e.category).label}</small></span>
-                  <span className="num">{money(e.amount, true)}</span>
-                </label>
+                  <input className="found-amt" inputMode="decimal" aria-label={`Price of ${e.description}`} defaultValue={e.amount.toFixed(2)} onChange={(ev) => setAmount(e.id, ev.target.value)} />
+                </div>
               ))}
             </div>
             <div className="row">

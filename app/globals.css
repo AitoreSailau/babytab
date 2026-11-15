@@ -276,3 +276,7 @@ input[type="checkbox"] { width: 22px; height: 22px; accent-color: var(--accent);
   .hero-row > div { min-width: 0; flex: 1 1 120px; padding: 14px 16px; }
   .hero-row b { font-size: 21px; }
 }
+
+.found-row { cursor: default; grid-template-columns: 22px 1fr 108px; }
+.found-amt { text-align: right; font-weight: 700; font-size: 19px !important; padding: 9px 12px !important; border-radius: 12px !important; font-variant-numeric: tabular-nums; }
+.found-warn { background: var(--accent); color: var(--white); font-weight: 600; border-radius: 18px; padding: 14px 20px; margin: -8px 0 20px; }

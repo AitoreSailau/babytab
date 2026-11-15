@@ -15,8 +15,8 @@ export async function callLlm(o: LlmOpts): Promise<{ text: string; provider: str
   const t = setTimeout(() => ctrl.abort(), o.timeoutMs ?? 20000);
   try {
     if (p === "anthropic") {
-      const model = process.env.ANTHROPIC_MODEL || "claude-haiku-4-5";
-      const r = await fetch("https://api.anthropic.com/v1/messages", {
+      const model = process.env.ANTHROPIC_MODEL || "claude-haiku-5-5";
+      const r = await fetch(`${process.env.ANTHROPIC_BASE_URL || "https://api.anthropic.com"}/v1/messages`, {
         method: "POST",
         signal: ctrl.signal,
         headers: { "content-type": "application/json", "x-api-key": process.env.ANTHROPIC_API_KEY!, "anthropic-version": "2023-06-01" },
