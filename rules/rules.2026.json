@@ -1,0 +1,672 @@
+{
+  "version": "2026.1",
+  "tax_year": 2026,
+  "verified_on": "2026-11-15",
+  "status_note": "TY2026 reflects the law as enacted (P.L. 119-21, OBBBA Secs. 70404-70405) and Rev. Proc. 2025-32. IRS Pub 503 / Form 2441 for TY2026 are pending; verify before filing.",
+  "sources": {
+    "PUB503": "IRS Publication 503 (2025), Child and Dependent Care Expenses",
+    "PUB502": "IRS Publication 502 (2025), Medical and Dental Expenses",
+    "IRC21": "IRC \u00a721 as amended by P.L. 119-21 Sec. 70405",
+    "IRC129": "IRC \u00a7129(a)(2)(A) as amended by P.L. 119-21 Sec. 70404",
+    "RP2025_32": "Rev. Proc. 2025-32 (2026 inflation adjustments); IRS IR-2025-103",
+    "CARES": "CARES Act \u00a73702 (OTC drugs and menstrual products HSA/FSA-eligible)",
+    "F2441": "Form 2441 and instructions"
+  },
+  "credit": {
+    "expense_limit_one": 3000,
+    "expense_limit_two_plus": 6000,
+    "rate_max": 0.5,
+    "phase1_start_agi": 15000,
+    "phase1_step": 2000,
+    "phase1_floor": 0.35,
+    "phase2_start_agi": {
+      "single": 75000,
+      "hoh": 75000,
+      "mfj": 150000,
+      "mfs": 75000
+    },
+    "phase2_step": {
+      "single": 2000,
+      "hoh": 2000,
+      "mfj": 4000,
+      "mfs": 2000
+    },
+    "phase2_floor": 0.2,
+    "refundable": false,
+    "qualifying_age_under": 13,
+    "student_disabled_deemed_monthly": {
+      "one": 250,
+      "two_plus": 500
+    },
+    "source": "IRC21"
+  },
+  "dcfsa": {
+    "limit": {
+      "single": 7500,
+      "hoh": 7500,
+      "mfj": 7500,
+      "mfs": 3750
+    },
+    "fica_rate": 0.0765,
+    "grid_step": 250,
+    "source": "IRC129"
+  },
+  "income_tax": {
+    "standard_deduction": {
+      "single": 16100,
+      "hoh": 24150,
+      "mfj": 32200,
+      "mfs": 16100
+    },
+    "brackets": {
+      "single": [
+        [
+          0,
+          0.1
+        ],
+        [
+          12400,
+          0.12
+        ],
+        [
+          50400,
+          0.22
+        ],
+        [
+          105700,
+          0.24
+        ],
+        [
+          201775,
+          0.32
+        ],
+        [
+          256225,
+          0.35
+        ],
+        [
+          640600,
+          0.37
+        ]
+      ],
+      "mfj": [
+        [
+          0,
+          0.1
+        ],
+        [
+          24800,
+          0.12
+        ],
+        [
+          100800,
+          0.22
+        ],
+        [
+          211400,
+          0.24
+        ],
+        [
+          403550,
+          0.32
+        ],
+        [
+          512450,
+          0.35
+        ],
+        [
+          768700,
+          0.37
+        ]
+      ],
+      "hoh": [
+        [
+          0,
+          0.1
+        ],
+        [
+          17700,
+          0.12
+        ],
+        [
+          67450,
+          0.22
+        ],
+        [
+          105700,
+          0.24
+        ],
+        [
+          201750,
+          0.32
+        ],
+        [
+          256200,
+          0.35
+        ],
+        [
+          640600,
+          0.37
+        ]
+      ],
+      "mfs": [
+        [
+          0,
+          0.1
+        ],
+        [
+          12400,
+          0.12
+        ],
+        [
+          50400,
+          0.22
+        ],
+        [
+          105700,
+          0.24
+        ],
+        [
+          201775,
+          0.32
+        ],
+        [
+          256225,
+          0.35
+        ],
+        [
+          384350,
+          0.37
+        ]
+      ]
+    },
+    "source": "RP2025_32"
+  },
+  "medical": {
+    "agi_floor": 0.075,
+    "source": "PUB502"
+  },
+  "checks": {
+    "R1": {
+      "name": "Qualifying person (under 13 on date of care)",
+      "pub": "Pub 503 \u2014 Qualifying Person Test"
+    },
+    "R2": {
+      "name": "Earned income (you and spouse)",
+      "pub": "Pub 503 \u2014 Earned Income Test"
+    },
+    "R3": {
+      "name": "Work-related expense",
+      "pub": "Pub 503 \u2014 Work-Related Expense Test"
+    },
+    "R4": {
+      "name": "Payments to relatives / spouse / other parent",
+      "pub": "Pub 503 \u2014 Payments to Relatives or Dependents"
+    },
+    "R5": {
+      "name": "Joint return test",
+      "pub": "Pub 503 \u2014 Joint Return Test"
+    },
+    "R6": {
+      "name": "Provider identification (name, address, TIN)",
+      "pub": "Pub 503 \u2014 Provider Identification Test; Form W-10"
+    },
+    "R7": {
+      "name": "Dollar limit ($3,000 / $6,000)",
+      "pub": "Pub 503 \u2014 Dollar Limit; IRC \u00a721(c)"
+    },
+    "R8": {
+      "name": "Reduced dollar limit (Dependent Care FSA)",
+      "pub": "Pub 503 \u2014 Reduced Dollar Limit; IRC \u00a721(c)"
+    },
+    "R9": {
+      "name": "Earned income limit",
+      "pub": "Pub 503 \u2014 Earned Income Limit"
+    },
+    "R10": {
+      "name": "Amount of credit (applicable %)",
+      "pub": "IRC \u00a721(a)(2) as amended (TY2026)"
+    },
+    "R11": {
+      "name": "Timing (paid and provided in tax year)",
+      "pub": "Pub 503 \u2014 Expenses not paid until the following year / Prepaid expenses"
+    },
+    "M1": {
+      "name": "Medical: HSA / FSA eligible",
+      "pub": "Pub 502 / Pub 969; CARES Act"
+    },
+    "M2": {
+      "name": "Medical: itemized deduction floor (7.5% of AGI)",
+      "pub": "Pub 502 \u2014 How Much of the Expenses Can You Deduct?"
+    },
+    "D1": {
+      "name": "Duplicate payment",
+      "pub": "BabyTab data rule"
+    }
+  },
+  "categories": [
+    {
+      "id": "not_care_kindergarten",
+      "label": "Kindergarten / school tuition",
+      "group": "Education",
+      "lane": "excluded",
+      "rule": "R3",
+      "reason": "Tuition for kindergarten or a higher grade is education, not care.",
+      "match": [
+        "kindergarten",
+        "\\bk tuition\\b",
+        "grade \\d",
+        "1st grade",
+        "elementary tuition",
+        "school tuition"
+      ]
+    },
+    {
+      "id": "not_care_overnight",
+      "label": "Overnight camp",
+      "group": "Activities",
+      "lane": "excluded",
+      "rule": "R3",
+      "reason": "Overnight camp is not a work-related expense.",
+      "match": [
+        "overnight",
+        "sleepaway",
+        "sleep-away",
+        "resident camp"
+      ]
+    },
+    {
+      "id": "not_care_datenight",
+      "label": "Babysitter (not for work)",
+      "group": "Childcare",
+      "lane": "excluded",
+      "rule": "R3",
+      "reason": "Care while you are not working or looking for work does not qualify.",
+      "match": [
+        "date night",
+        "date-night",
+        "night out",
+        "anniversary",
+        "concert night",
+        "dinner out"
+      ]
+    },
+    {
+      "id": "not_care_tutoring",
+      "label": "Tutoring / summer school",
+      "group": "Education",
+      "lane": "excluded",
+      "rule": "R3",
+      "reason": "Tutoring and summer school are education, not care.",
+      "match": [
+        "tutor",
+        "summer school",
+        "kumon",
+        "test prep"
+      ]
+    },
+    {
+      "id": "not_care_meals",
+      "label": "Meals billed separately",
+      "group": "Food",
+      "lane": "excluded",
+      "rule": "R3",
+      "reason": "Separately billed meals are treated conservatively as not care. If food is included in the care price and cannot be separated, the full amount may count.",
+      "match": [
+        "lunch program",
+        "lunch",
+        "meal plan",
+        "snack fee"
+      ]
+    },
+    {
+      "id": "not_care_late_fee",
+      "label": "Late / forfeited fees",
+      "group": "Childcare",
+      "lane": "excluded",
+      "rule": "R3",
+      "reason": "Late fees and forfeited deposits are not payments for care.",
+      "match": [
+        "late fee",
+        "late pickup",
+        "forfeit",
+        "nsf fee"
+      ]
+    },
+    {
+      "id": "care_afterschool",
+      "label": "Before / after-school care",
+      "group": "Childcare",
+      "lane": "care",
+      "rule": "R3",
+      "match": [
+        "after-school",
+        "after school",
+        "afterschool",
+        "before-school",
+        "before school",
+        "extended day",
+        "aftercare",
+        "before care"
+      ]
+    },
+    {
+      "id": "care_daycamp",
+      "label": "Day camp",
+      "group": "Childcare",
+      "lane": "care",
+      "rule": "R3",
+      "match": [
+        "day camp",
+        "summer camp",
+        "camp week",
+        "spring break camp",
+        "school break camp"
+      ]
+    },
+    {
+      "id": "care_registration",
+      "label": "Care registration / agency fee",
+      "group": "Childcare",
+      "lane": "care",
+      "rule": "R3",
+      "match": [
+        "registration fee",
+        "enrollment fee",
+        "agency fee",
+        "application fee",
+        "supply fee"
+      ]
+    },
+    {
+      "id": "care_nanny",
+      "label": "Nanny / babysitter (while working)",
+      "group": "Childcare",
+      "lane": "care",
+      "rule": "R3",
+      "match": [
+        "nanny",
+        "babysit",
+        "sitter",
+        "after preschool",
+        "pickup care",
+        "au pair"
+      ]
+    },
+    {
+      "id": "care_center",
+      "label": "Daycare / preschool",
+      "group": "Childcare",
+      "lane": "care",
+      "rule": "R3",
+      "match": [
+        "daycare",
+        "day care",
+        "preschool",
+        "pre-k",
+        "prek",
+        "early learning",
+        "toddler room",
+        "infant room",
+        "child care",
+        "childcare tuition",
+        "montessori",
+        "learning center",
+        "\\belc\\b",
+        "pre-k room",
+        "childcare",
+        "child-care"
+      ]
+    },
+    {
+      "id": "lactation",
+      "label": "Breast pump & lactation",
+      "group": "Health",
+      "lane": "medical",
+      "rule": "M1",
+      "pub502": true,
+      "match": [
+        "breast pump",
+        "lactation",
+        "milk storage bags",
+        "nursing pads",
+        "pump parts"
+      ]
+    },
+    {
+      "id": "health_rx",
+      "label": "Doctor, copays & prescriptions",
+      "group": "Health",
+      "lane": "medical",
+      "rule": "M1",
+      "pub502": true,
+      "match": [
+        "copay",
+        "co-pay",
+        "pediatric",
+        "pediatrician",
+        "prescription",
+        "\\brx\\b",
+        "amoxicillin",
+        "urgent care",
+        "dental",
+        "dentist",
+        "orthodont",
+        "vision exam",
+        "office visit",
+        "well visit"
+      ]
+    },
+    {
+      "id": "health_otc",
+      "label": "OTC medicine & first aid",
+      "group": "Health",
+      "lane": "medical",
+      "rule": "M1",
+      "pub502": false,
+      "match": [
+        "tylenol",
+        "motrin",
+        "ibuprofen",
+        "acetaminophen",
+        "infants' ",
+        "children's tylenol",
+        "children's motrin",
+        "zyrtec",
+        "claritin",
+        "thermometer",
+        "saline",
+        "nasal aspirator",
+        "band-aid",
+        "bandages",
+        "first aid",
+        "sunscreen spf",
+        "spf 50",
+        "spf 30",
+        "diaper rash cream",
+        "desitin",
+        "hydrocortisone"
+      ]
+    },
+    {
+      "id": "diapers",
+      "label": "Diapers & wipes",
+      "group": "Essentials",
+      "lane": "none",
+      "match": [
+        "diaper",
+        "pull-ups",
+        "pullups",
+        "wipes",
+        "swaddlers",
+        "cruisers",
+        "little movers",
+        "training pants",
+        "easy ups",
+        "pampers",
+        "huggies",
+        "goodnites"
+      ]
+    },
+    {
+      "id": "formula_food",
+      "label": "Formula & kid food",
+      "group": "Food",
+      "lane": "none",
+      "match": [
+        "formula",
+        "baby food",
+        "puree",
+        "pouch",
+        "pouches",
+        "toddler milk",
+        "puffs",
+        "yogurt melts",
+        "gerber",
+        "happy baby",
+        "goldfish",
+        "kids snack",
+        "applesauce"
+      ]
+    },
+    {
+      "id": "clothing",
+      "label": "Clothing & shoes",
+      "group": "Essentials",
+      "lane": "none",
+      "match": [
+        "onesie",
+        "bodysuit",
+        "leggings",
+        "pajama",
+        "pajamas",
+        "romper",
+        "toddler shirt",
+        "t-shirt",
+        "socks",
+        "shoes",
+        "sneakers",
+        "jacket",
+        "coat",
+        "cat & jack",
+        "carter's",
+        "carters",
+        "oshkosh",
+        "boots",
+        "mittens",
+        "swimsuit",
+        "hoodie",
+        "jeans"
+      ]
+    },
+    {
+      "id": "gear",
+      "label": "Gear & furniture",
+      "group": "Gear",
+      "lane": "none",
+      "match": [
+        "car seat",
+        "stroller",
+        "crib",
+        "high chair",
+        "highchair",
+        "baby monitor",
+        "carrier",
+        "bouncer",
+        "booster",
+        "playpen",
+        "pack n play",
+        "gate",
+        "sippy",
+        "bottle",
+        "bottles",
+        "booster seat"
+      ]
+    },
+    {
+      "id": "toys_books",
+      "label": "Toys & books",
+      "group": "Fun",
+      "lane": "none",
+      "match": [
+        "toy",
+        "lego",
+        "duplo",
+        "book",
+        "books",
+        "puzzle",
+        "crayons",
+        "play-doh",
+        "playdoh",
+        "blocks",
+        "stuffed",
+        "plush",
+        "magna-tiles",
+        "coloring"
+      ]
+    },
+    {
+      "id": "activities",
+      "label": "Activities & classes",
+      "group": "Activities",
+      "lane": "none",
+      "match": [
+        "soccer",
+        "swim",
+        "dance",
+        "gymnastics",
+        "ballet",
+        "music class",
+        "lessons",
+        "karate",
+        "little kickers",
+        "art class",
+        "tumbling"
+      ]
+    },
+    {
+      "id": "not_kid",
+      "label": "Not kid-related",
+      "group": "Not kid",
+      "lane": "none",
+      "reason": "Household item, not counted as kid spending.",
+      "match": [
+        "paper towel",
+        "toilet paper",
+        "coffee",
+        "k-cups",
+        "detergent pods",
+        "dish soap",
+        "trash bags",
+        "wine",
+        "beer",
+        "razor",
+        "adult",
+        "men's",
+        "women's",
+        "dog food",
+        "cat litter"
+      ]
+    },
+    {
+      "id": "other",
+      "label": "Other kid spending",
+      "group": "Other",
+      "lane": "none",
+      "match": []
+    }
+  ],
+  "provider_types": [
+    "center",
+    "home",
+    "nanny",
+    "after_school",
+    "day_camp",
+    "overnight",
+    "school",
+    "relative",
+    "other_parent",
+    "spouse",
+    "other"
+  ]
+}

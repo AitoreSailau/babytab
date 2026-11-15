@@ -1,0 +1,22 @@
+{
+  "note": "Synthetic sample household. Not a real family. All names, EINs and amounts are invented.",
+  "asOf": "2026-11-15",
+  "household": {
+    "taxYear": 2026,
+    "filingStatus": "mfj",
+    "agi": 120000,
+    "earnedYou": 68000,
+    "earnedSpouse": 52000,
+    "dcfsaElected": 5000,
+    "dcfsaPlanCap": 7500,
+    "dcfsaAvailable": true,
+    "hasHsaOrHealthFsa": true,
+    "monthlyBudget": 1900
+  },
+  "children": [
+    { "id": "c_mia", "name": "Mia Rivera", "birthDate": "2023-04-12" }
+  ],
+  "optionalChild": { "id": "c_leo", "name": "Leo Rivera", "birthDate": "2020-02-03" },
+  "files": ["little_oaks_statement.txt", "zelle_venmo_history.txt", "store_receipts.txt", "card_export.csv"],
+  "optionalChildFiles": ["leo_school_and_care.txt"]
+}
